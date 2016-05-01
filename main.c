@@ -17,19 +17,23 @@ struct file_setting{
 int set_filecpy(struct file_setting *fs){
 	int fd_to, fd_from;
 	ssize_t nread;
-	char buf[2];
+	char buf[4096];
+	char* destfile = malloc(strlen(fs -> path) + strlen("copy") +1);
+	strcpy(destfile, fs -> path);
+	strcat(destfile, "copy");
+	printf("%s\n", destfile);
 	fd_from = open(fs -> path, O_RDONLY);
 	if(fd_from < 0){
 		printf("cant open file src\n");
 		return -1;
 	}
-	fd_to = open("/home/ado/test2", O_WRONLY | O_CREAT | O_EXCL , 0666);
+	fd_to = open(destfile, O_WRONLY | O_CREAT | O_EXCL , 0666);
 	if(fd_to < 0){
 		printf("cant open file dest\n");
-		remove("/home/ado/test2");
+		remove(destfile);
 	}
-	fd_to = open("/home/ado/test2", O_WRONLY | O_CREAT | O_EXCL , 0666);
-	
+	fd_to = open(destfile, O_WRONLY | O_CREAT | O_EXCL , 0666);
+	free(destfile);	
 	while(nread = read(fd_from, buf, sizeof buf), nread > 0){
 		char* out = buf;
 		ssize_t nwritten;
@@ -51,7 +55,6 @@ void populate_file(char* dirname, char* sfile, struct file_setting *fs){
 	dir = opendir(dirname);
 	struct dirent *dent;
 	fs -> path = malloc(strlen(dirname) + strlen(sfile) + 2);
-
 	if(dir != NULL){
 		while((dent = readdir(dir))){
 			if(strcmp(dent -> d_name, sfile) == 0){
@@ -64,6 +67,10 @@ void populate_file(char* dirname, char* sfile, struct file_setting *fs){
 	} else{
 		printf("DIR does not exist\n");
 	}
+	free(dir);
+	free(dent);
+	dir = NULL;
+	dent = NULL;
 
 }
 
